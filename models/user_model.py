@@ -150,7 +150,7 @@ class User:
             results_dir = os.path.join('results', timestamp)
             if not os.path.exists(results_dir):
                 os.makedirs(results_dir)
-            plt.savefig(os.path.join(results_dir, f'user_{self.user_id}.png'))
+            plt.savefig(os.path.join(results_dir, f'user_{self.user_id}.png'), dpi=300)
         # # 保存
         # if CONFIG.show.show_user_HistoryData:
         #     plt.savefig(f"../results/user_{self.user_id}.png")

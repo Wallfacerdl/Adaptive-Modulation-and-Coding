@@ -75,8 +75,7 @@ class InitSNRGenerator:
 class AR_SNR_Generator:
     """AR(1)信道模型，自动生成SNR序列"""
 
-    def __init__(self, init_snr_db = 20.0, alpha = 0.9,
-                 sigma_db = 4.0, noise_scale = 1.0):
+    def __init__(self, init_snr_db=20.0, alpha=0.9, sigma_db=4.0, noise_scale=1.0):
         """
         init_snr_db: 初始SNR值 (dB)
         alpha: 时间相关性系数 (0.9≈慢变，0.5≈快变)
@@ -86,7 +85,7 @@ class AR_SNR_Generator:
         self.init_snr_db = init_snr_db
         self.current_snr = init_snr_db
         self.alpha = alpha
-        self.sigma_ar = sigma_db * np.sqrt(1 - self.alpha ** 2) * noise_scale
+        self.sigma_ar = sigma_db * np.sqrt(1 - self.alpha**2) * noise_scale
         pass
 
     def next_snr(self):

@@ -20,9 +20,9 @@ def main():
     # 修改部分默认配置
     update_config(
         CONFIG,
-        simulation__num_users=100,
+        simulation__num_users=1000,
         phy_layer_bandwidth=10e9,  # 大于180MHZ
-        simulation__save_training_results=True,
+        simulation__save_training_results=False,
         simulation__tti_length=100,
         link_adaptation__strategy="查表",  # 或者'DNN'
     )

@@ -61,7 +61,7 @@ class InitSNRGenerator:
                 results_dir = os.path.join("results", timestamp)
                 if not os.path.exists(results_dir):
                     os.makedirs(results_dir)
-                plt.savefig(os.path.join(results_dir, "SNR distribution.png"), dpi=300)
+                plt.savefig(os.path.join(results_dir, "SNR distribution.svg"),format = 'svg', dpi=300)
 
             plt.show()
 

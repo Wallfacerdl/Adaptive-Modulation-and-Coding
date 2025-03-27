@@ -93,7 +93,9 @@ class SimulationResults:
             if not os.path.exists(results_dir):
                 os.makedirs(results_dir)
             plt.savefig(
-                os.path.join(results_dir, "throughput distribution.png"), dpi=300
+                os.path.join(results_dir, "throughput distribution.svg"),
+                format="svg",
+                dpi=300,
             )
         plt.show()
 
@@ -118,7 +120,9 @@ class SimulationResults:
             results_dir = os.path.join("results", timestamp)
             if not os.path.exists(results_dir):
                 os.makedirs(results_dir)
-            plt.savefig(os.path.join(results_dir, "CQI distribution.png"), dpi=300)
+            plt.savefig(
+                os.path.join(results_dir, "CQI distribution.svg"), format="svg", dpi=300
+            )
         plt.show()
 
     def plot_mcs_distribution(self):
@@ -141,7 +145,10 @@ class SimulationResults:
             results_dir = os.path.join("results", timestamp)
             if not os.path.exists(results_dir):
                 os.makedirs(results_dir)
-            plt.savefig(os.path.join(results_dir, "MCS distribution.png"), dpi=300)
+            plt.savefig(
+                os.path.join(results_dir, "MCS distribution.svg"), format="svg", dpi=300
+            )
+            print("MCS distribution saved")
         plt.show()
 
     def show_hist_snr(self):
@@ -161,7 +168,11 @@ class SimulationResults:
             results_dir = os.path.join("results", timestamp)
             if not os.path.exists(results_dir):
                 os.makedirs(results_dir)
-            plt.savefig(os.path.join(results_dir, "Final SNR distribution.png"), dpi=300)
+            plt.savefig(
+                os.path.join(results_dir, "Final SNR distribution.svg"),
+                format="svg",
+                dpi=300,
+            )
         plt.show()
 
     def show_bler_analysis(self):
@@ -213,7 +224,9 @@ class SimulationResults:
             results_dir = os.path.join("results", timestamp)
             if not os.path.exists(results_dir):
                 os.makedirs(results_dir)
-            plt.savefig(os.path.join(results_dir, "BLER data.png"), dpi=300)
+            plt.savefig(
+                os.path.join(results_dir, "BLER data.svg"), format="svg", dpi=300
+            )
         plt.show()
 
     def print_summary_stats(self):
@@ -292,7 +305,11 @@ class SimulationResults:
             results_dir = os.path.join("results", timestamp)
             if not os.path.exists(results_dir):
                 os.makedirs(results_dir)
-            plt.savefig(os.path.join(results_dir, "delay distribution.png"), dpi=300)
+            plt.savefig(
+                os.path.join(results_dir, "delay distribution.svg"),
+                format="svg",
+                dpi=300,
+            )
         plt.show()
 
     def show_snr_mcsindex(self):
@@ -314,7 +331,7 @@ class SimulationResults:
             results_dir = os.path.join("results", timestamp)
             if not os.path.exists(results_dir):
                 os.makedirs(results_dir)
-            plt.savefig(os.path.join(results_dir, "SNR-MCS.png"), dpi=300)
+            plt.savefig(os.path.join(results_dir, "SNR-MCS.svg"), format="svg", dpi=300)
         plt.show()
 
     def show_snr_efficiency(self):
@@ -336,7 +353,9 @@ class SimulationResults:
             results_dir = os.path.join("results", timestamp)
             if not os.path.exists(results_dir):
                 os.makedirs(results_dir)
-            plt.savefig(os.path.join(results_dir, "SNR-Efficiency.png"), dpi=300)
+            plt.savefig(
+                os.path.join(results_dir, "SNR-Efficiency.svg"), format="svg", dpi=300
+            )
         plt.show()
 
     def show_all_results(self):

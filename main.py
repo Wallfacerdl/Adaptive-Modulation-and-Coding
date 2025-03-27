@@ -26,6 +26,7 @@ def main():
         simulation__tti_length=100,
         link_adaptation__strategy="查表",  # 或者'DNN'
     )
+    print("开始仿真")
     run_simulation()
 
 

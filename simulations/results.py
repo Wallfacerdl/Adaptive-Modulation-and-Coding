@@ -32,6 +32,8 @@ class SimulationResults:
         self.mcs_index = []
         self.efficiency = []
         self.save_path = CONFIG.simulation.save_path
+        self.origin_snr_list = []
+        self.user0_history_data = []
 
     def collect_calculate_data(self, base_station, users):
         """收集用户的吞吐量、CQI、MCS 数据"""

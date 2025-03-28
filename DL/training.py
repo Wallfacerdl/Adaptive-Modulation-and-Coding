@@ -7,8 +7,9 @@ from utils.cqi_to_mcs import cqi_to_mcs
 from utils.mapping import mcs_index_map
 from utils.bler_estimation import estimate_bler
 from utils.font_setting import font_setting
-
-font_setting()
+from config.DefaultConfig import CONFIG
+# 1.数据准备
+font_setting()1
 choice = 0  # 选择是否生成数据，0为直接加载数据，1为生成数据
 # 3.1 网络架构
 import torch.nn as nn

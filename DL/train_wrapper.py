@@ -1,7 +1,6 @@
-# 小符同学
+# WallFacer
 # python YYDS
 # 开发时间： 2025/2/18 下午4:00
-# 与现有仿真的对接层
 import torch
 from DL.training import SNRMCSModel
 from config.DefaultConfig import CONFIG

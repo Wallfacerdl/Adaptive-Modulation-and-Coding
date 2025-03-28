@@ -19,15 +19,3 @@ else:
 # print("Num GPUs Available: ", len(tf.config.experimental.list_physical_devices("GPU")))
 # print(tf.sysconfig.get_build_info())
 # print(tf.__version__)
-
-import matplotlib.pyplot as plt
-
-plt.plot([1, 2, 3, 4])
-plt.ylabel("some numbers")
-plt.savefig("test2.svg", format="svg",dpi = 200)
-plt.show()
-
-plt.plot([1,4,9,16])
-plt.ylabel("some numbers")
-plt.savefig("test3.svg", format="svg",dpi = 200)
-plt.show()

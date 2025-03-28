@@ -141,16 +141,7 @@ class User:
         plt.tight_layout()
         if CONFIG.simulation.save_info:
             import os
-            from datetime import datetime
-            # 如果存在results文件夹，则保存图片
-            if not os.path.exists('results'):
-                os.makedirs('results')
-            # 创建当前时间子文件夹
-            timestamp = datetime.now().strftime('%Y%m%d_%H')
-            results_dir = os.path.join('results', timestamp)
-            if not os.path.exists(results_dir):
-                os.makedirs(results_dir)
-            plt.savefig(os.path.join(results_dir, f'user_{self.user_id}.svg'),format = 'svg', dpi=300)
+            plt.savefig(,format = 'svg', dpi=300)
         # # 保存
         # if CONFIG.show.show_user_HistoryData:
         #     plt.savefig(f"../results/user_{self.user_id}.png")

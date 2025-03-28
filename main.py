@@ -32,7 +32,7 @@ def main():
         simulation__save_info=True,
         simulation__save_training_results=False,
         simulation__tti_length=100,
-        link_adaptation__strategy="查表",  # 或者'DNN'
+        link_adaptation__strategy="DNN",  # 或者'DNN'
     )
     # 如果需要保存文件的话，则创建文件夹
     if CONFIG.simulation.save_info:

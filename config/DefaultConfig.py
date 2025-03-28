@@ -69,6 +69,10 @@ class ShowConfig:
 class UserConfig:
     iot_params: dict
     citycar_params: dict
+@dataclass
+class AIConfig:
+    model_path: str
+    model_name: str
 
 
 @dataclass
@@ -81,6 +85,7 @@ class GlobalConfig:
     advanced: AdvancedConfig
     show: ShowConfig
     user: UserConfig
+    ai:AIConfig
 
 
 # 获取当前路径为保存路径
@@ -166,6 +171,10 @@ CONFIG = GlobalConfig(
             "fd": 100,  # 多普勒频移-车载用户为50-300HZ
         },
     ),
+    ai = AIConfig(
+        model_path = "model/2025-02-25-10-07-00",
+        model_name = "mcs_predictor_params.pth",
+    )
 )
 
 # 测试调用

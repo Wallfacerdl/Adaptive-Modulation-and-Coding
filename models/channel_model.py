@@ -8,7 +8,7 @@ from config.DefaultConfig import CONFIG
 import numpy as np
 import matplotlib
 
-matplotlib.use('TkAgg')  # or 'Agg', 'Qt5Agg', etc.
+matplotlib.use("TkAgg")  # or 'Agg', 'Qt5Agg', etc.
 
 
 class InitSNRGenerator:
@@ -18,7 +18,6 @@ class InitSNRGenerator:
         self.sigma = sigma
         self.low = low
         self.high = high
-        self.show_cut = True
         self.new_median = 0
 
     def generate(self):
@@ -27,47 +26,19 @@ class InitSNRGenerator:
         :return: SNR数组（dB）
         """
         samples = np.random.normal(self.median, self.sigma, self.num_users)
-        if CONFIG.show.plot_hist_snr and self.show_cut:
-            plt.subplot(1, 2, 1)
-            # bins参数是指定bin(箱子)的个数，也就是总共有几条条状图
-            plt.hist(samples, bins=13, edgecolor="black", alpha=0.7)
-            plt.suptitle("SNR Distribution")
-            plt.title("截断前")
         overflow_num = 0
         cut_samples = []
         for snr in samples:
-            if snr > self.high:
+            if snr > self.high or snr < self.low:
                 overflow_num += 1
                 # print(snr)
                 continue
-            elif snr < self.low:
-                overflow_num += 1
-                continue
             cut_samples.append(snr)
-
-        if CONFIG.show.plot_hist_snr and self.show_cut:
-            plt.subplot(1, 2, 2)
-            plt.hist(cut_samples, bins=13, edgecolor="black", alpha=0.7)
-            plt.title("截断后")
-            if CONFIG.simulation.save_info:
-                import os
-                from datetime import datetime
-
-                # 如果存在results文件夹，则保存图片
-                if not os.path.exists("results"):
-                    os.makedirs("results")
-                # 创建当前时间子文件夹
-                timestamp = datetime.now().strftime("%Y%m%d_%H")
-                results_dir = os.path.join("results", timestamp)
-                if not os.path.exists(results_dir):
-                    os.makedirs(results_dir)
-                plt.savefig(os.path.join(results_dir, "SNR distribution.svg"),format = 'svg', dpi=300)
-
-            plt.show()
 
         self.new_median = np.mean(cut_samples)
         return {
-            "values": cut_samples,
+            "origin_snr_list": samples,
+            "cur_values": cut_samples,
             "overflow_rate": overflow_num / self.num_users,
             "new_median": self.new_median,
         }

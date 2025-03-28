@@ -12,16 +12,17 @@ class BaseStation:
         self.total_throughput = 0  # 初始化吞吐量
         # 初始化用户
         # 考虑阴影衰落，生成正态分布的SNR(dB)
-        init_snr_sequences = InitSNRGenerator(CONFIG.simulation.num_users,
-                                              CONFIG.channel.snr['medium'],
-                                              CONFIG.channel.snr['sigma'],
-                                              CONFIG.channel.snr['init_range'][0],
-                                              CONFIG.channel.snr['init_range'][1]).generate()
-        snr_list = init_snr_sequences["values"]
+        init_snr_sequences = InitSNRGenerator(
+            CONFIG.simulation.num_users,
+            CONFIG.channel.snr["medium"],
+            CONFIG.channel.snr["sigma"],
+            CONFIG.channel.snr["init_range"][0],
+            CONFIG.channel.snr["init_range"][1],
+        ).generate()
+        self.origin_snr_list = init_snr_sequences["origin_snr_list"]
+        self.snr_list = init_snr_sequences["cur_values"]
         self.new_mean_snr = init_snr_sequences["new_median"]
-        # print(init_snr_sequences["new_median"])
-
-        self.users = [User(user_id, snr) for user_id, snr in enumerate(snr_list)]
+        self.users = [User(user_id, snr) for user_id, snr in enumerate(self.snr_list)]
 
     def update_users(self):
         """在基站中随时间动态更新所有用户的CQI、MCS以及信道"""

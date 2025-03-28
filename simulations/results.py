@@ -25,12 +25,13 @@ class SimulationResults:
         self.user_ids = []
         self.mcs_de_duplicative = []
         self.bler_values = []
-        self.snr_values = []
+        self.final_snr_list = []
         self.modulation = []
         self.cqi_bler = {}
         self.transmission_time = []
         self.mcs_index = []
         self.efficiency = []
+        self.save_path = CONFIG.simulation.save_path
 
     def collect_calculate_data(self, base_station, users):
         """收集用户的吞吐量、CQI、MCS 数据"""
@@ -43,9 +44,13 @@ class SimulationResults:
         self.theoretical_throughput = (
             throughputCalculator.calculate_theoretical_throughput()
         )
+
+        # self.snr_values = base_station.snr_list
+        self.origin_snr_list = base_station.origin_snr_list
         for user in users:
             if user.user_id == 0:
                 user.plot()
+            self.final_snr_list.append(user.snr)
             self.user_ids.append(user.user_id)
             self.throughputs.append(user.throughput)
             self.cqi_values.append(user.cqi)
@@ -54,7 +59,6 @@ class SimulationResults:
                 user.mcs["efficiency"]
             )  # 取调制阶数，例如 2, 4, 16, 64
             self.bler_values.append(user.bler)  # 误块率
-            self.snr_values.append(user.snr)  # 信噪比
             self.modulation.append(
                 user.mcs["modulation"]
             )  # 取调制方式，例如 QPSK, 16QAM, 64QAM
@@ -73,6 +77,24 @@ class SimulationResults:
             self.transmission_time
         ).calculate_average_delay()
 
+    def cut_snr_bijiao(self):
+        """对比原始SNR和最终SNR"""
+        plt.subplot(1, 2, 1)
+        # bins参数是指定bin(箱子)的个数，也就是总共有几条条状图
+        plt.hist(self.origin_snr_list, bins=13, edgecolor="black", alpha=0.7)
+        plt.suptitle("SNR Distribution")
+        plt.title("截断前")
+        plt.subplot(1, 2, 2)
+        plt.hist(self.final_snr_list, bins=13, edgecolor="black", alpha=0.7)
+        plt.title("截断后")
+        if CONFIG.simulation.save_info:
+            plt.savefig(
+                self.save_path + "//" + "SNR截断前后对比.svg",
+                format="svg",
+                dpi=400,
+            )
+        plt.show()
+
     def plot_throughput_distribution(self):
         """绘制吞吐量分布图"""
         plt.figure(figsize=(8, 5))
@@ -84,18 +106,10 @@ class SimulationResults:
         plt.title("用户吞吐量分布")
         plt.grid()
         if CONFIG.simulation.save_info:
-            # 如果存在results文件夹，则保存图片
-            if not os.path.exists("results"):
-                os.makedirs("results")
-            # 创建当前时间子文件夹
-            timestamp = datetime.now().strftime("%Y%m%d_%H")
-            results_dir = os.path.join("results", timestamp)
-            if not os.path.exists(results_dir):
-                os.makedirs(results_dir)
             plt.savefig(
-                os.path.join(results_dir, "throughput distribution.svg"),
+                self.save_path + "//" + "throughput distribution.svg",
                 format="svg",
-                dpi=300,
+                dpi=400,
             )
         plt.show()
 
@@ -112,16 +126,10 @@ class SimulationResults:
         plt.xticks(range(1, 16))
         plt.grid(axis="y")
         if CONFIG.simulation.save_info:
-            # 如果存在results文件夹，则保存图片
-            if not os.path.exists("results"):
-                os.makedirs("results")
-            # 创建当前时间子文件夹
-            timestamp = datetime.now().strftime("%Y%m%d_%H")
-            results_dir = os.path.join("results", timestamp)
-            if not os.path.exists(results_dir):
-                os.makedirs(results_dir)
             plt.savefig(
-                os.path.join(results_dir, "CQI distribution.svg"), format="svg", dpi=300
+                self.save_path + "//" + "CQI distribution.svg",
+                format="svg",
+                dpi=400,
             )
         plt.show()
 
@@ -137,41 +145,26 @@ class SimulationResults:
         plt.xticks(unique_mcs)
         plt.grid(axis="y")
         if CONFIG.simulation.save_info:
-            # 如果存在results文件夹，则保存图片
-            if not os.path.exists("results"):
-                os.makedirs("results")
-            # 创建当前时间子文件夹
-            timestamp = datetime.now().strftime("%Y%m%d_%H")
-            results_dir = os.path.join("results", timestamp)
-            if not os.path.exists(results_dir):
-                os.makedirs(results_dir)
             plt.savefig(
-                os.path.join(results_dir, "MCS distribution.svg"), format="svg", dpi=300
+                self.save_path + "//" + "MCS distribution.svg",
+                format="svg",
+                dpi=400,
             )
-            print("MCS distribution saved")
         plt.show()
 
     def show_hist_snr(self):
         """绘制SNR分布情况"""
         plt.figure(figsize=(8, 5))
-        plt.hist(self.snr_values, bins=30, edgecolor="black", alpha=0.7)
+        plt.hist(self.final_snr_list, bins=30, edgecolor="black", alpha=0.7)
         plt.xlabel("SNR (dB)")
         plt.ylabel("number of UEs")
         plt.title("Final SNR distribution histogram")
         plt.grid(axis="y")
         if CONFIG.simulation.save_info:
-            # 如果存在results文件夹，则保存图片
-            if not os.path.exists("results"):
-                os.makedirs("results")
-            # 创建当前时间子文件夹
-            timestamp = datetime.now().strftime("%Y%m%d_%H")
-            results_dir = os.path.join("results", timestamp)
-            if not os.path.exists(results_dir):
-                os.makedirs(results_dir)
             plt.savefig(
-                os.path.join(results_dir, "Final SNR distribution.svg"),
+                self.save_path + "//" + "Final SNR distribution.svg",
                 format="svg",
-                dpi=300,
+                dpi=400,
             )
         plt.show()
 
@@ -189,7 +182,7 @@ class SimulationResults:
         # BLER vs SNR散点图
         plt.subplot(2, 2, 2)
         colors = ["red" if bler > 0.1 else "blue" for bler in self.bler_values]
-        plt.scatter(self.snr_values, self.bler_values, c=colors, alpha=0.6)
+        plt.scatter(self.final_snr_list, self.bler_values, c=colors, alpha=0.6)
         plt.title("BLER vs SNR")
         plt.xlabel("SNR (dB)")
         plt.ylabel("BLER")
@@ -216,16 +209,10 @@ class SimulationResults:
         plt.grid(True)
         plt.tight_layout()
         if CONFIG.simulation.save_info:
-            # 如果存在results文件夹，则保存图片
-            if not os.path.exists("results"):
-                os.makedirs("results")
-            # 创建当前时间子文件夹
-            timestamp = datetime.now().strftime("%Y%m%d_%H")
-            results_dir = os.path.join("results", timestamp)
-            if not os.path.exists(results_dir):
-                os.makedirs(results_dir)
             plt.savefig(
-                os.path.join(results_dir, "BLER data.svg"), format="svg", dpi=300
+                self.save_path + "//" + "BLER data.svg",
+                format="svg",
+                dpi=400,
             )
         plt.show()
 
@@ -255,38 +242,31 @@ class SimulationResults:
         # print(f"用户数：{CONFIG.simulation.num_users} 平均吞吐量: {np.mean(self.throughputs) / 1e6:.4f} Mbps")
         print(f"平均时延: {self.avg_delay * 1e3} 毫秒")
         # 将以上信息存储为文本文件
-        if CONFIG.simulation.save_info:
-            if not os.path.exists("results"):
-                os.makedirs("results")
-            # 创建当前时间子文件夹
-            timestamp = datetime.now().strftime("%Y%m%d_%H")
-            results_dir = os.path.join("results", timestamp)
-            if not os.path.exists(results_dir):
-                os.makedirs(results_dir)
-            file_path = os.path.join(results_dir, "results.txt")
-            # 创建文件
-            with open(file_path, "w") as f:
-                f.write("=== BLER统计摘要 ===\n")
-                f.write(f"平均BLER: {np.mean(self.bler_values):.2%}\n")
-                f.write(
-                    f"BLER>10%的用户比例: {np.mean(np.array(self.bler_values) > 0.1):.2%}\n"
-                )
-                f.write(f"最高BLER: {np.max(self.bler_values):.2%}\n")
-                f.write(f"最低BLER: {np.min(self.bler_values):.2%}\n")
-                f.write("\n=== 各调制方式BLER ===\n")
-                for mod, bler in self.avg_bler.items():
-                    f.write(f"{mod}: {bler:.2%}\n")
-                f.write("\n=== 总指标 ===\n")
-                f.write(f"理论吞吐量: {self.theoretical_throughput / 1e9:.4f} Gbps\n")
-                f.write(
-                    f"结束时刻-仿真总吞吐量: {self.total_throughput / 1e9:.4f} Gbps,"
-                    f"达理论值的{self.total_throughput / self.theoretical_throughput:.2%}\n"
-                )
-                f.write(
-                    f"时域上平均-仿真总吞吐量: {time_mean_throughput / 1e9:.4f} "
-                    f"Gbps,达理论值的{rate:.2%}\n"
-                )
-                f.write(f"平均时延: {self.avg_delay * 1e3} 毫秒")
+
+        file_path = os.path.join(self.save_path, "results.txt")
+        # 写入文件
+        with open(file_path, "w") as f:
+            f.write("=== BLER统计摘要 ===\n")
+            f.write(f"平均BLER: {np.mean(self.bler_values):.2%}\n")
+            f.write(
+                f"BLER>10%的用户比例: {np.mean(np.array(self.bler_values) > 0.1):.2%}\n"
+            )
+            f.write(f"最高BLER: {np.max(self.bler_values):.2%}\n")
+            f.write(f"最低BLER: {np.min(self.bler_values):.2%}\n")
+            f.write("\n=== 各调制方式BLER ===\n")
+            for mod, bler in self.avg_bler.items():
+                f.write(f"{mod}: {bler:.2%}\n")
+            f.write("\n=== 总指标 ===\n")
+            f.write(f"理论吞吐量: {self.theoretical_throughput / 1e9:.4f} Gbps\n")
+            f.write(
+                f"结束时刻-仿真总吞吐量: {self.total_throughput / 1e9:.4f} Gbps,"
+                f"达理论值的{self.total_throughput / self.theoretical_throughput:.2%}\n"
+            )
+            f.write(
+                f"时域上平均-仿真总吞吐量: {time_mean_throughput / 1e9:.4f} "
+                f"Gbps,达理论值的{rate:.2%}\n"
+            )
+            f.write(f"平均时延: {self.avg_delay * 1e3} 毫秒")
 
     def show_delay_distribution(self):
         """绘制时延分布情况"""
@@ -297,23 +277,15 @@ class SimulationResults:
         plt.title("Transmission Time distribution histogram")
         plt.grid(axis="y")
         if CONFIG.simulation.save_info:
-            # 如果存在results文件夹，则保存图片
-            if not os.path.exists("results"):
-                os.makedirs("results")
-            # 创建当前时间子文件夹
-            timestamp = datetime.now().strftime("%Y%m%d_%H")
-            results_dir = os.path.join("results", timestamp)
-            if not os.path.exists(results_dir):
-                os.makedirs(results_dir)
             plt.savefig(
-                os.path.join(results_dir, "delay distribution.svg"),
+                self.save_path + "//" + "delay distribution.svg",
                 format="svg",
-                dpi=300,
+                dpi=400,
             )
         plt.show()
 
     def show_snr_mcsindex(self):
-        X = np.array(self.snr_values)
+        X = np.array(self.final_snr_list)
         Y = np.array(self.mcs_index)  # MCS索引从0开始
         # 画散点图
         plt.figure(figsize=(8, 5))
@@ -323,19 +295,15 @@ class SimulationResults:
         plt.title("SNR vs MCS index")
         plt.grid()
         if CONFIG.simulation.save_info:
-            # 如果存在results文件夹，则保存图片
-            if not os.path.exists("results"):
-                os.makedirs("results")
-            # 创建当前时间子文件夹
-            timestamp = datetime.now().strftime("%Y%m%d_%H")
-            results_dir = os.path.join("results", timestamp)
-            if not os.path.exists(results_dir):
-                os.makedirs(results_dir)
-            plt.savefig(os.path.join(results_dir, "SNR-MCS.svg"), format="svg", dpi=300)
+            plt.savefig(
+                self.save_path + "//" + "SNR-MCS.svg",
+                format="svg",
+                dpi=400,
+            )
         plt.show()
 
     def show_snr_efficiency(self):
-        X = np.array(self.snr_values)
+        X = np.array(self.final_snr_list)
         Y = np.array(self.efficiency)  # MCS索引从0开始
         # 画散点图
         plt.figure(figsize=(8, 5))
@@ -345,16 +313,10 @@ class SimulationResults:
         plt.title("SNR vs efficiency")
         plt.grid()
         if CONFIG.simulation.save_info:
-            # 如果存在results文件夹，则保存图片
-            if not os.path.exists("results"):
-                os.makedirs("results")
-            # 创建当前时间子文件夹
-            timestamp = datetime.now().strftime("%Y%m%d_%H")
-            results_dir = os.path.join("results", timestamp)
-            if not os.path.exists(results_dir):
-                os.makedirs(results_dir)
             plt.savefig(
-                os.path.join(results_dir, "SNR-Efficiency.svg"), format="svg", dpi=300
+                self.save_path + "//" + "SNR-Efficiency.svg",
+                format="svg",
+                dpi=400,
             )
         plt.show()
 
@@ -376,19 +338,15 @@ class SimulationResults:
             self.print_summary_stats()
         if CONFIG.show.show_snr_mcsindex:
             self.show_snr_mcsindex()
+        if CONFIG.show.show_snr_bijiao:
+            self.cut_snr_bijiao()
 
-    def save_results(self):
+    def save_data_for_training(self):
         if CONFIG.simulation.save_training_results:
-            # 将数据到处为npy文件
-            if not os.path.exists("results"):
-                os.makedirs("results")
-            # 创建当前时间子文件夹
-            timestamp = datetime.now().strftime("%Y%m%d_%H")
-            results_dir = os.path.join("results", timestamp)
-            if not os.path.exists(results_dir):
-                os.makedirs(results_dir)
-            # 创建当前时间子文件夹
-            # np.save(results_dir + '/mcs_index.npy', self.mcs_index)
-            # np.save(results_dir + './snr_values.npy', self.snr_values)
-            np.save("./mcs_index.npy", self.mcs_index)
-            np.save("./snr_values.npy", self.snr_values)
+            mode = CONFIG.simulation.data_mode
+            filename = {
+                "snr_filename": mode + "_final_snr_list.npy",
+                "mcs_filename": mode + "_mcs_index.npy",
+            }
+            np.save(self.save_path + filename["snr_filename"], self.final_snr_list)
+            np.save(self.save_path + filename["mcs_filename"], self.mcs_index)

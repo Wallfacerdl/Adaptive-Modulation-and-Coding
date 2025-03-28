@@ -24,5 +24,10 @@ import matplotlib.pyplot as plt
 
 plt.plot([1, 2, 3, 4])
 plt.ylabel("some numbers")
-plt.savefig("test.svg", format="svg",dpi = 200)
+plt.savefig("test2.svg", format="svg",dpi = 200)
+plt.show()
+
+plt.plot([1,4,9,16])
+plt.ylabel("some numbers")
+plt.savefig("test3.svg", format="svg",dpi = 200)
 plt.show()

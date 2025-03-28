@@ -14,4 +14,4 @@ def run_simulation():
     results = SimulationResults()
     results.collect_calculate_data(base_station, base_station.users)  # 收集用户数据
     results.show_all_results()  # 展示吞吐量、CQI、MCS 等结果
-    results.save_results()  # 保存结果
+    results.save_data_for_training()  # 保存snr和mcs结果为npy文件

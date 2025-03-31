@@ -1,4 +1,4 @@
-# WallFacer
+# 已弃用
 # python YYDS
 # 开发时间： 2025/2/18 下午4:00
 import torch

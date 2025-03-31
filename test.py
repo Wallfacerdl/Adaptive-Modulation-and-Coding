@@ -15,3 +15,11 @@ bler_samples = [0.95, 0.75, 0.30, 0.05, 0.01]
 
 params, _ = curve_fit(sigmoid, snr_samples, bler_samples, p0 = [8.0, 1.0])
 print(f"SNR_50={params[0]:.2f}, k={params[1]:.2f}")
+
+# 获取当前工作目录
+# import os
+# import sys
+# print("Current working directory:", os.getcwd())
+# # 更改
+# os.chdir(os.path.dirname(os.path.abspath('main.py')))
+# print("Changed working directory:", os.getcwd())

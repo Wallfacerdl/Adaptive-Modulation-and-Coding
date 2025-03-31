@@ -70,7 +70,7 @@ plt.ylabel("调制方式")
 plt.title("模型预测 vs 实际调制方式")
 plt.legend()
 plt.grid()
-plt.show()
+# plt.show()
 
 # 性能曲线可视化
 plt.figure(figsize = (12, 6))
@@ -93,4 +93,4 @@ plt.title("理论 BER 曲线与模型推荐的调制方式")
 plt.yscale("log")  # 使用对数坐标显示 BER
 plt.legend()
 plt.grid()
-plt.show()
+# plt.show()

@@ -7,5 +7,5 @@ def update_config(config, **kwargs):
         keys = key.split("__")
         sub_config = config
         for k in keys[:-1]:
-            sub_config = getattr(sub_config, k)
+            sub_config = getattr(sub_config, k) # 获取子配置
         setattr(sub_config, keys[-1], value)

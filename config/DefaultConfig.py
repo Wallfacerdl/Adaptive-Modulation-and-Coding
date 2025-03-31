@@ -13,7 +13,6 @@ class SimulationConfig:
     save_training_results: bool
     save_info: bool
     save_path: str
-    data_mode: str
 
 
 @dataclass
@@ -71,8 +70,11 @@ class UserConfig:
     citycar_params: dict
 @dataclass
 class AIConfig:
-    model_path: str
     model_name: str
+    data_mode: str
+    pth_path: str
+    pth_time:str
+
 
 
 @dataclass
@@ -98,11 +100,10 @@ CONFIG = GlobalConfig(
         tti_length=1000,
         save_training_results=False,
         save_info=True,
-        # 改成获取当前文件的绝对路径,然后返回上一级目录
+        # 改成获取当前工作目录的绝对路径,然后返回上一级目录
         save_path=os.path.join(
             os.path.abspath(os.path.join(os.getcwd(), "..")), "results"
         ),
-        data_mode="Lite",  # 是否选择轻量化模型—— 'Lite' or 'complex'
     ),
     phy_layer=PhyLayerConfig(
         fft_size=64,
@@ -172,9 +173,11 @@ CONFIG = GlobalConfig(
         },
     ),
     ai = AIConfig(
-        model_path = "model/2025-02-25-10-07-00",
         model_name = "mcs_predictor_params.pth",
-    )
+        data_mode = "Lite",  # 是否选择轻量化模型—— 'Lite' or 'Complex'
+        pth_path = "DL/mcs_predictor_params.pth",  # 模型参数文件路径
+        pth_time = "20250330_01-22"  # 模型训练时间戳
+        )
 )
 
 # 测试调用

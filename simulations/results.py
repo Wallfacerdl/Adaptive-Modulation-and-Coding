@@ -93,9 +93,9 @@ class SimulationResults:
             plt.savefig(
                 self.save_path + "//" + "SNR截断前后对比.svg",
                 format="svg",
-                dpi=400,
+                dpi=280,
             )
-        plt.show()
+        # plt.show()
 
     def plot_throughput_distribution(self):
         """绘制吞吐量分布图"""
@@ -111,9 +111,9 @@ class SimulationResults:
             plt.savefig(
                 self.save_path + "//" + "throughput distribution.svg",
                 format="svg",
-                dpi=400,
+                dpi=280,
             )
-        plt.show()
+        # plt.show()
 
     def plot_cqi_distribution(self):
         """绘制 CQI 分布情况"""
@@ -131,9 +131,9 @@ class SimulationResults:
             plt.savefig(
                 self.save_path + "//" + "CQI distribution.svg",
                 format="svg",
-                dpi=400,
+                dpi=280,
             )
-        plt.show()
+        # plt.show()
 
     def plot_mcs_distribution(self):
         """绘制 MCS 调制方式的统计情况"""
@@ -150,9 +150,9 @@ class SimulationResults:
             plt.savefig(
                 self.save_path + "//" + "MCS distribution.svg",
                 format="svg",
-                dpi=400,
+                dpi=280,
             )
-        plt.show()
+        # plt.show()
 
     def show_hist_snr(self):
         """绘制SNR分布情况"""
@@ -166,9 +166,9 @@ class SimulationResults:
             plt.savefig(
                 self.save_path + "//" + "Final SNR distribution.svg",
                 format="svg",
-                dpi=400,
+                dpi=280,
             )
-        plt.show()
+        # plt.show()
 
     def show_bler_analysis(self):
         """新增BLER相关可视化"""
@@ -214,9 +214,9 @@ class SimulationResults:
             plt.savefig(
                 self.save_path + "//" + "BLER data.svg",
                 format="svg",
-                dpi=400,
+                dpi=280,
             )
-        plt.show()
+        # plt.show()
 
     def print_summary_stats(self):
         """打印关键统计指标"""
@@ -282,9 +282,9 @@ class SimulationResults:
             plt.savefig(
                 self.save_path + "//" + "delay distribution.svg",
                 format="svg",
-                dpi=400,
+                dpi=280,
             )
-        plt.show()
+        # plt.show()
 
     def show_snr_mcsindex(self):
         X = np.array(self.final_snr_list)
@@ -300,9 +300,9 @@ class SimulationResults:
             plt.savefig(
                 self.save_path + "//" + "SNR-MCS.svg",
                 format="svg",
-                dpi=400,
+                dpi=280,
             )
-        plt.show()
+        # plt.show()
 
     def show_snr_efficiency(self):
         X = np.array(self.final_snr_list)
@@ -318,9 +318,9 @@ class SimulationResults:
             plt.savefig(
                 self.save_path + "//" + "SNR-Efficiency.svg",
                 format="svg",
-                dpi=400,
+                dpi=280,
             )
-        plt.show()
+        # plt.show()
 
     def show_all_results(self):
         """调用所有的可视化函数"""
@@ -345,10 +345,12 @@ class SimulationResults:
 
     def save_data_for_training(self):
         if CONFIG.simulation.save_training_results:
-            mode = CONFIG.simulation.data_mode
+            mode = CONFIG.ai.data_mode
             filename = {
                 "snr_filename": mode + "_final_snr_list.npy",
                 "mcs_filename": mode + "_mcs_index.npy",
             }
-            np.save(self.save_path + filename["snr_filename"], self.final_snr_list)
-            np.save(self.save_path + filename["mcs_filename"], self.mcs_index)
+            np.save(
+                self.save_path + "\\" + filename["snr_filename"], self.final_snr_list
+            )
+            np.save(self.save_path + "\\" + filename["mcs_filename"], self.mcs_index)

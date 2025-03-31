@@ -24,19 +24,27 @@ def main():
     os.chdir(os.path.dirname(os.path.abspath(__file__)))
     # print(os.getcwd())
 
-    # 修改部分默认配置
+    # 修改部分常用的默认配置
     update_config(
         CONFIG,
-        simulation__num_users=1000,
-        phy_layer_bandwidth=10e9,  # 大于180MHZ
+        phy_layer_bandwidth = 10e9,  # 大于180MHZ
+        simulation__num_users=100000000,  # 用户数
         simulation__save_info=True,
-        simulation__save_training_results=False,
-        simulation__tti_length=100,
-        link_adaptation__strategy="DNN",  # 或者'DNN'
+        simulation__save_training_results=True,
+        simulation__tti_length=1, # slot个数
+        link_adaptation__strategy="查表",  # 或者'DNN'（加载DNN模型时即为模型的验证）
+        channel__ar_model={"alpha": 0.9, "sigma_ar": 0.1},  # 更改信道模型参数
+        ai__data_mode = 'Complex', # Complex或Lite 若为查表模式则表示数据集的大小；若为DNN模式则表示搭载模型是否轻量化
     )
+
     # 如果需要保存文件的话，则创建文件夹
     if CONFIG.simulation.save_info:
         update_config(CONFIG, simulation__save_path=generate_save_path())
+    if CONFIG.link_adaptation.strategy == "DNN":
+        update_config(
+            CONFIG,
+            ai__pth_time = "20250330_01-22" # 选择搭载的模型训练时间戳
+            )
     print("Simulation begins…")
 
     run_simulation()

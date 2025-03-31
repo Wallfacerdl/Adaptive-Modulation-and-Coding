@@ -1,6 +1,4 @@
-# 小符同学
-# python YYDS
-# 开发时间： 2025/2/24 下午4:04
+# 已弃用
 import numpy as np
 from utils.font_setting import font_setting
 
@@ -18,7 +16,7 @@ mcs_index = np.load("../mcs_index.npy")
 # plt.ylabel("MCS index")
 # plt.title("SNR-MCS relation")
 # plt.grid(True)
-# plt.show()
+# # plt.show()
 """将数据存储为dataframe文件"""
 data = pd.DataFrame({"SNR": snr_values, "MCS": mcs_index})
 # 按照snr的范围排序，并找出每个mcs中的最大和最小snr

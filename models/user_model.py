@@ -49,12 +49,20 @@ class User:
         self.__update_mcs()
         self.__update_bler()  # 新增BLER计算
         """外环链路自适应"""
+        # DNN方法不需要再上调MCS index
         while (
-            self.bler < CONFIG.link_adaptation.bler_target
+            # (self.bler < 0.02 and CONFIG.link_adaptation.strategy == "查表")) # BLER 太小了，需要外环放大一部分
+            (self.bler < CONFIG.link_adaptation.bler_target and CONFIG.link_adaptation.strategy == "查表") # BLER 太小了，需要外环放大一部分
             and self.mcs_index < 28
-            and CONFIG.link_adaptation.strategy == "查表"
+            # and CONFIG.link_adaptation.strategy == "查表"
         ):
-            # 达标
+            if self.bler > 0.03:
+                break            # 不需要再微调了
+            if self.bler < 0.01:
+                self.mcs_index = 28 # 一键拉满
+                self.__update_mcs(synchronous = True)
+                self.__update_bler(synchronous = True)
+                break
             # print('初始MCS:', self.mcs)
             self.transmission_time += 1
             self.update = True
@@ -66,20 +74,36 @@ class User:
                 self.mcs_index += 3
             self.__update_mcs(synchronous=True)
             self.__update_bler(synchronous=True)
+
+        shift_time = self.transmission_time
         while (
             self.bler > CONFIG.link_adaptation.bler_target
             and self.mcs_index > 1
-            and CONFIG.link_adaptation.strategy == "查表"
         ):
-            # 不达标
+            if CONFIG.link_adaptation.strategy == "DNN":
+                if self.bler < 0.2:
+                    self.transmission_time += 1
+                    self.mcs_index -= 1
+                    self.__update_mcs(synchronous = True)
+                    self.__update_bler(synchronous = True)  # 新增BLER计算
+                break
+
             # print('初始MCS:', self.mcs)
             self.transmission_time += 1
             self.update = True
-            self.mcs_index -= 1
+            if self.bler > 0.3: # 对应质量很差的情况，直接剧烈降低MCS index
+                self.mcs_index -= 3
+                if self.mcs_index == -1:
+                    self.mcs_index = 0
+            else:
+                self.mcs_index -= 2
+            # self.mcs_index -= 1
             self.__update_mcs(synchronous=True)
             self.__update_bler(synchronous=True)  # 新增BLER计算
-            # print('更新MCS:', self.mcs)
 
+        down_time = self.transmission_time - shift_time
+            # print('更新MCS:', self.mcs)
+        # print(f"shift time:{shift_time};down_time:{down_time}")
     def __update_channel(self):
         pass
 
@@ -95,9 +119,11 @@ class User:
 
     def __update_mcs(self, synchronous=False):
         """通过LinkAdaptation选择MCS"""
+        ## synchronous标志是否为外环链路自适应修正
         self.mcs = self.la.select_mcs(self)
         self.mcs_index = self.mcs["index"]
         if synchronous:
+            # 外环修正中
             self.mcs_history[-1] = self.mcs_index
         else:
             self.mcs_history.append(self.mcs_index)
@@ -143,14 +169,18 @@ class User:
             import os
 
             plt.savefig(
-                CONFIG.simulation.save_path + f"//{self.user_id}.svg",
+                CONFIG.simulation.save_path + f"//user_{self.user_id}_data.svg",
                 format="svg",
                 dpi=280,
             )
         # plt.show()
 
     def __update_bler(self, synchronous=False):
-        """计算当前BLER"""
+        """
+        计算当前BLER
+        :param synchronous: 标志是否为外环链路自适应修正
+        :return:
+        """
         self.bler = estimate_bler(self.snr, self.cqi, self.mcs)
         if synchronous:
             self.bler_history[-1] = self.bler

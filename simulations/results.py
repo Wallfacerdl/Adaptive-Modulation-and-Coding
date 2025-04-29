@@ -50,7 +50,7 @@ class SimulationResults:
         # self.snr_values = base_station.snr_list
         self.origin_snr_list = base_station.origin_snr_list
         for user in users:
-            if user.user_id == 0:
+            if user.user_id <10:
                 user.plot()
             self.final_snr_list.append(user.snr)
             self.user_ids.append(user.user_id)
@@ -235,7 +235,7 @@ class SimulationResults:
         print(
             f"结束时刻-仿真总吞吐量: {self.total_throughput / 1e9:.4f} Gbps,达理论值的{self.total_throughput / self.theoretical_throughput:.2%}"
         )
-        time_mean_throughput = self.total_time_throughput / CONFIG.simulation.tti_length
+        time_mean_throughput = self.total_time_throughput / (CONFIG.simulation.tti_length)
         rate = time_mean_throughput / self.theoretical_throughput
         print(
             f"时域上平均-仿真总吞吐量: {time_mean_throughput / 1e9:.4f} "
@@ -273,7 +273,7 @@ class SimulationResults:
     def show_delay_distribution(self):
         """绘制时延分布情况"""
         plt.figure(figsize=(8, 5))
-        plt.hist(self.transmission_time, bins=30, edgecolor="black", alpha=0.7)
+        plt.hist(self.transmission_time, bins=15, edgecolor="black", alpha=0.7)
         plt.xlabel("Transmission Time")
         plt.ylabel("number of UEs")
         plt.title("Transmission Time distribution histogram")

@@ -11,9 +11,9 @@ class LinkAdaptation:
         self.mcs_su_table = []  # 用于存放查表法的MCS表
         if self.strategy == 'DNN':
             import os
-            print('当前目录:', os.getcwd()) # 通常为工程根目录
+            # print('当前目录:', os.getcwd()) # 通常为工程根目录
             pth_path = os.path.join(os.getcwd(), 'DL', 'results')
-            print('模型路径:', pth_path)
+            # print('模型路径:', pth_path)
             # 要读取的模型文件名
             pth_name = f'{CONFIG.ai.pth_time}_{CONFIG.ai.model_name[:-4]}_{CONFIG.ai.data_mode}.pth'
             self.controller = AIMSController(pth_path + "\\" + pth_name)  # DNN模型
@@ -23,12 +23,18 @@ class LinkAdaptation:
             # 默认策略：使用查表法--根据CQI选择MCS
             # return cqi_to_mcs(cqi)
             if not user.update:  # 初始化
+                # 情况1：初始化阶段
                 if mcs_index_map not in self.mcs_su_table:
                     self.mcs_su_table.append(mcs_index_map)
                 return mcs_index_map[get_initial_mcs_index(user.cqi)]
             else:
+                # 情况2：直接根据外环修正后的mcs_index生成mcs
                 return mcs_index_map[user.mcs_index]
         elif self.strategy == 'DNN':
-            return mcs_index_map[self.controller.safe_select_mcs(user.snr)]
+            if not user.update:  # 根据新snr确定预定mcs（OLLA之前）
+                return mcs_index_map[self.controller.safe_select_mcs(user.snr)]
+            else:
+                return mcs_index_map[user.mcs_index]
+
         else:
             raise ValueError('无效的策略')

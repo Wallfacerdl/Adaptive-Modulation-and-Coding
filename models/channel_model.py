@@ -3,12 +3,12 @@
 # 小符同学
 # python YYDS
 # 开发时间： 2025/2/27 下午5:24
+import matplotlib
+matplotlib.use("Agg")  # 服务器/无图形界面环境使用非交互后端
 import matplotlib.pyplot as plt
 from config.DefaultConfig import CONFIG
 import numpy as np
-import matplotlib
 
-matplotlib.use("TkAgg")  # or 'Agg', 'Qt5Agg', etc.
 
 
 class InitSNRGenerator:

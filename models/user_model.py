@@ -5,20 +5,41 @@ from utils.snr_to_cqi import snr_to_cqi
 from utils.bler_estimation import estimate_bler  # 新增导入
 from utils.mapping import mcs_index_map
 from models.link_adaptation import LinkAdaptation
+from models.link_update_template import LinkUpdateTemplate
+from models.olla_policy import OllaPolicy
 from models.channel_model import AR_SNR_Generator
 from config.DefaultConfig import CONFIG
 
 
-class User:
-    def __init__(self, user_id: int, snr: float):
+class User(LinkUpdateTemplate):
+    def __init__(
+        self,
+        user_id: int,
+        snr: float,
+        link_adaptation: LinkAdaptation | None = None,
+        olla_policy: OllaPolicy | None = None,
+    ):
         # 基础信息
         self.user_id = user_id
         self.snr = snr
-        self.la = LinkAdaptation(
+        self.la = link_adaptation or LinkAdaptation(
             strategy=CONFIG.link_adaptation.strategy
-        )  # 使用链路自适应
+        )
+        self.max_mcs_index = max(mcs_index_map.keys())
         self.update = False
-        # passlossModel_撒点模型
+
+        if olla_policy is None:
+            from models.factory import LinkAdaptationFactory
+
+            self.olla_policy = LinkAdaptationFactory.create_olla_policy(
+                strategy=CONFIG.link_adaptation.strategy,
+                bler_target=CONFIG.link_adaptation.bler_target,
+                max_mcs_index=self.max_mcs_index,
+                olla_config=CONFIG.link_adaptation.olla,
+            )
+        else:
+            self.olla_policy = olla_policy
+
         # 初始化CQI和MCS
         self.cqi = snr_to_cqi(self.snr)
         self.mcs = self.la.select_mcs(self)
@@ -39,94 +60,54 @@ class User:
             alpha=CONFIG.channel.ar_model["alpha"],
         )  # 信道模型
 
-    def update_link(self):
-        """统一更新信道、CQI 和 MCS"""
-        self.__update_channel()
-        self.transmission_time += 1
-        # TODO:更新信道后需要更新SNR后再更新CQI和MCS
-        self.__update_snr()
-        self.__update_cqi()
-        self.__update_mcs()
-        self.__update_bler()  # 新增BLER计算
-        """外环链路自适应"""
-        # DNN方法不需要再上调MCS index
-        while (
-            # (self.bler < 0.02 and CONFIG.link_adaptation.strategy == "查表")) # BLER 太小了，需要外环放大一部分
-            (self.bler < CONFIG.link_adaptation.bler_target and CONFIG.link_adaptation.strategy == "查表") # BLER 太小了，需要外环放大一部分
-            and self.mcs_index < 28
-            # and CONFIG.link_adaptation.strategy == "查表"
-        ):
-            if self.bler > 0.03:
-                break            # 不需要再微调了
-            if self.bler < 0.01:
-                self.mcs_index = 28 # 一键拉满
-                self.__update_mcs(synchronous = True)
-                self.__update_bler(synchronous = True)
-                break
-            # print('初始MCS:', self.mcs)
-            self.transmission_time += 1
-            self.update = True
-            if self.mcs_index == 27:
-                self.mcs_index += 1
-            elif self.mcs_index == 26:
-                self.mcs_index += 2
-            else:
-                self.mcs_index += 3
-            self.__update_mcs(synchronous=True)
-            self.__update_bler(synchronous=True)
+    def _before_update(self):
+        self.update = False
 
-        shift_time = self.transmission_time
-        while (
-            self.bler > CONFIG.link_adaptation.bler_target
-            and self.mcs_index > 1
-        ):
-            if CONFIG.link_adaptation.strategy == "DNN":
-                if self.bler < 0.2:
-                    self.transmission_time += 1
-                    self.mcs_index -= 1
-                    self.__update_mcs(synchronous = True)
-                    self.__update_bler(synchronous = True)  # 新增BLER计算
-                break
-
-            # print('初始MCS:', self.mcs)
-            self.transmission_time += 1
-            self.update = True
-            if self.bler > 0.3: # 对应质量很差的情况，直接剧烈降低MCS index
-                self.mcs_index -= 3
-                if self.mcs_index == -1:
-                    self.mcs_index = 0
-            else:
-                self.mcs_index -= 2
-            # self.mcs_index -= 1
-            self.__update_mcs(synchronous=True)
-            self.__update_bler(synchronous=True)  # 新增BLER计算
-
-        down_time = self.transmission_time - shift_time
-            # print('更新MCS:', self.mcs)
-        # print(f"shift time:{shift_time};down_time:{down_time}")
-    def __update_channel(self):
+    def _update_channel(self):
         pass
 
-    def __update_snr(self):
+    def _mark_transmission(self):
+        self.transmission_time += 1
+
+    def _update_snr(self):
         """更新SNR"""
         self.snr = self.snr_generator.next_snr()
         self.snr_history.append(self.snr)
 
-    def __update_cqi(self):
+    def _update_cqi(self):
         """根据SNR更新CQI"""
         self.cqi = snr_to_cqi(self.snr)
         self.cqi_history.append(self.cqi)
 
-    def __update_mcs(self, synchronous=False):
-        """通过LinkAdaptation选择MCS"""
-        ## synchronous标志是否为外环链路自适应修正
+    def _update_mcs(self):
+        """通过LinkAdaptation选择初始MCS"""
         self.mcs = self.la.select_mcs(self)
         self.mcs_index = self.mcs["index"]
-        if synchronous:
-            # 外环修正中
-            self.mcs_history[-1] = self.mcs_index
-        else:
-            self.mcs_history.append(self.mcs_index)
+        self.mcs_history.append(self.mcs_index)
+
+    def _update_bler(self):
+        """计算当前BLER"""
+        self.bler = estimate_bler(self.snr, self.cqi, self.mcs)
+        self.bler_history.append(self.bler)
+
+    def _optimize_outer_loop(self):
+        self.olla_policy.optimize(self)
+
+    def apply_mcs_index(self, new_index: int) -> bool:
+        """Apply an MCS index during outer-loop optimization."""
+        bounded = max(0, min(new_index, self.max_mcs_index))
+        changed = bounded != self.mcs_index
+
+        self.mcs_index = bounded
+        self.mcs = self.la.select_mcs_by_index(self.mcs_index)
+        self.bler = estimate_bler(self.snr, self.cqi, self.mcs)
+
+        self.mcs_history[-1] = self.mcs_index
+        self.bler_history[-1] = self.bler
+
+        if changed:
+            self.update = True
+        return changed
 
     def plot(self):
         import matplotlib.pyplot as plt
@@ -174,18 +155,6 @@ class User:
                 dpi=280,
             )
         # plt.show()
-
-    def __update_bler(self, synchronous=False):
-        """
-        计算当前BLER
-        :param synchronous: 标志是否为外环链路自适应修正
-        :return:
-        """
-        self.bler = estimate_bler(self.snr, self.cqi, self.mcs)
-        if synchronous:
-            self.bler_history[-1] = self.bler
-        else:
-            self.bler_history.append(self.bler)
 
     def calculate_throughput(self, total_bandwidth, cur_time=-1) -> None:
         """根据MCS计算某一时刻的吞吐量"""

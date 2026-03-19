@@ -1,19 +1,15 @@
 def generate_save_path():
     from config.DefaultConfig import CONFIG
-    import os
+    from config.paths import RESULTS_ROOT
+    from config.strategy import normalize_strategy
     from datetime import datetime
 
-    # 先创建results文件夹
-    if not os.path.exists("results"):
-        os.makedirs("results")
-    # 再在子目录下创建当前时间子文件夹
+    RESULTS_ROOT.mkdir(parents=True, exist_ok=True)
     timestamp = datetime.now().strftime("%Y%m%d_%H-%M")
 
-    dir = timestamp+"_" + CONFIG.link_adaptation.strategy + "_"+CONFIG.ai.data_mode  # 加上使用的链路自适应模式
+    strategy = normalize_strategy(CONFIG.link_adaptation.strategy)
+    dir = timestamp + "_" + strategy.value + "_" + CONFIG.ai.data_mode
 
-    results_dir = os.path.join("results", dir)
-    if not os.path.exists(results_dir):
-        os.makedirs(results_dir) 
-    # 使用绝对路径
-    results_path = os.path.abspath(results_dir)
-    return results_path
+    results_dir = RESULTS_ROOT / dir
+    results_dir.mkdir(parents=True, exist_ok=True)
+    return str(results_dir)

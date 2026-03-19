@@ -50,7 +50,7 @@ class SimulationResults:
         # self.snr_values = base_station.snr_list
         self.origin_snr_list = base_station.origin_snr_list
         for user in users:
-            if user.user_id <10:
+            if CONFIG.show.show_user_HistoryData and user.user_id < 10:
                 user.plot()
             self.final_snr_list.append(user.snr)
             self.user_ids.append(user.user_id)
@@ -345,12 +345,18 @@ class SimulationResults:
 
     def save_data_for_training(self):
         if CONFIG.simulation.save_training_results:
+            import os
+
             mode = CONFIG.ai.data_mode
             filename = {
                 "snr_filename": mode + "_final_snr_list.npy",
                 "mcs_filename": mode + "_mcs_index.npy",
             }
             np.save(
-                self.save_path + "\\" + filename["snr_filename"], self.final_snr_list
+                os.path.join(self.save_path, filename["snr_filename"]),
+                self.final_snr_list,
             )
-            np.save(self.save_path + "\\" + filename["mcs_filename"], self.mcs_index)
+            np.save(
+                os.path.join(self.save_path, filename["mcs_filename"]),
+                self.mcs_index,
+            )

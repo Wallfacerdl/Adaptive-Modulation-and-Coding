@@ -1,17 +1,14 @@
-from models.gNB_model import BaseStation
-from simulations.results import SimulationResults
+import os
+import sys
+
+
+# 允许直接运行本文件时正确导入项目内模块
+PROJECT_ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+if PROJECT_ROOT not in sys.path:
+    sys.path.insert(0, PROJECT_ROOT)
+
+from simulations.facade import SimulationFacade
 
 
 def run_simulation():
-
-    # 初始化基站
-    base_station = BaseStation()
-
-    # 运行仿真
-    base_station.update_users()
-
-    # 收集仿真结果并展示
-    results = SimulationResults()
-    results.collect_calculate_data(base_station, base_station.users)  # 收集用户数据
-    results.show_all_results()  # 展示吞吐量、CQI、MCS 等结果
-    results.save_data_for_training()  # 保存snr和mcs结果为npy文件
+    SimulationFacade().run()

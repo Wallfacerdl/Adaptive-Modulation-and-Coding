@@ -1,9 +1,14 @@
 # 小符同学
 # python YYDS
 # 开发时间： 2025/2/25 上午10:07
+from config.strategy import normalize_strategy
+
+
 def update_config(config, **kwargs):
     """更新配置"""
     for key, value in kwargs.items():
+        if key == "link_adaptation__strategy":
+            value = normalize_strategy(value)
         keys = key.split("__")
         sub_config = config
         for k in keys[:-1]:

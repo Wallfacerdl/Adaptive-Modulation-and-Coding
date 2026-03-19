@@ -1,5 +1,6 @@
 from dataclasses import dataclass
-import os
+from config.paths import RESULTS_ROOT
+from config.strategy import LinkAdaptationStrategy
 
 """创建一个结构体便于分类"""
 
@@ -33,8 +34,9 @@ class ChannelConfig:
 
 @dataclass
 class LinkAdaptationConfig:
-    strategy: str
+    strategy: LinkAdaptationStrategy | str
     bler_target: float
+    olla: dict
 
 
 @dataclass
@@ -90,20 +92,15 @@ class GlobalConfig:
     ai:AIConfig
 
 
-# 获取当前路径为保存路径
-print(os.getcwd())
 CONFIG = GlobalConfig(
     simulation=SimulationConfig(
-        num_users=1000,
+        num_users=100,
         duration=60,
         tti_duration=1e-3,
-        tti_length=1000,
+        tti_length=100,
         save_training_results=False,
         save_info=True,
-        # 改成获取当前工作目录的绝对路径,然后返回上一级目录
-        save_path=os.path.join(
-            os.path.abspath(os.path.join(os.getcwd(), "..")), "results"
-        ),
+        save_path=str(RESULTS_ROOT),
     ),
     phy_layer=PhyLayerConfig(
         fft_size=64,
@@ -122,7 +119,20 @@ CONFIG = GlobalConfig(
         },
         ar_model={"alpha": 0.9, "sigma_ar": 0.1},  # 自相关系数
     ),
-    link_adaptation=LinkAdaptationConfig(strategy="查表", bler_target=0.1),  # DNN或查表
+    link_adaptation=LinkAdaptationConfig(
+        strategy=LinkAdaptationStrategy.TABLE_LOOKUP,
+        bler_target=0.1,
+        olla={
+            "table": {
+                "medium_bler_upper": 0.03,
+                "low_bler_lower": 0.01,
+                "severe_bler_upper": 0.30,
+            },
+            "dnn": {
+                "soft_cap": 0.2,
+            },
+        },
+    ),
     scheduler=SchedulerConfig(
         type="round_robin",
         qos_requirements={
